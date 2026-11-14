@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+# 
 [versions]
 android-compileSdk = "37"
 android-minSdk = "28"
@@ -48,7 +48,7 @@ ziplineVersion = "1.28.0"
 ktor = "3.5.1"
 dnssdkt = "1.1.0"
 filekit = "0.14.2"
-compose-webview = "0.1.0-SNAPSHOT"
+compose-webview = "1.0.3"
 composeNativeTray = "2.1.6"
 koin = "4.2.2"
 multiplatform-nav3-ui = "1.1.1"
