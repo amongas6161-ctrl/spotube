@@ -106,7 +106,7 @@ fun AppFloatingPlayer(
 
     fun onNextTrack() {
         scope.launch {
-            audioPlayerQueue.next()
+            audioPlayer.skipToNext()
         }
     }
 
