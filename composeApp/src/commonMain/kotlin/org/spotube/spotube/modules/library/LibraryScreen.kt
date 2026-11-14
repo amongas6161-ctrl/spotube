@@ -17,58 +17,70 @@
 
 package org.spotube.spotube.modules.library
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.Text
 import com.composeunstyled.currentWindowWidthBreakpoint
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Grid
+import compose.icons.feathericons.List
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.spotube.millennium.adaptive.WindowBreakpoints
+import org.spotube.millennium.composables.MillenniumIconButton
+import org.spotube.millennium.composables.MillenniumIconButtonStyle
+import org.spotube.millennium.composables.MillenniumTextField
+import org.spotube.millennium.theme.MillenniumTheme
+import org.spotube.spotube.core.ui.component.ApplicationMainBar
 import org.spotube.spotube.getPlatform
 import org.spotube.spotube.isDesktop
-import org.spotube.spotube.core.ui.component.ApplicationMainBar
 import org.spotube.spotube.modules.downloads.DownloadsScreen
 import org.spotube.spotube.modules.library.album.LibraryAlbumsScreen
 import org.spotube.spotube.modules.library.artist.LibraryArtistsScreen
 import org.spotube.spotube.modules.library.local_tracks.LibraryLocalTracksScreen
 import org.spotube.spotube.modules.library.playlist.LibraryPlaylistsScreen
+import org.spotube.spotube.modules.plugin.guard.MetadataPluginGuard
 import org.spotube.spotube.resources.iconsax.Iconsax
 import org.spotube.spotube.resources.iconsax.IconsaxAddSquare
 import org.spotube.spotube.resources.iconsax.IconsaxCloseSquare
 import org.spotube.spotube.resources.iconsax.IconsaxRefreshRight
 import org.spotube.spotube.resources.iconsax.IconsaxSearchBroken
-import org.jetbrains.compose.resources.StringResource
-import org.spotube.spotube.modules.plugin.guard.MetadataPluginGuard
-import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
-import org.spotube.millennium.adaptive.WindowBreakpoints
-import org.spotube.millennium.composables.MillenniumButton
-import org.spotube.millennium.composables.MillenniumButtonStyle
-import org.spotube.millennium.composables.MillenniumIconButton
-import org.spotube.millennium.composables.MillenniumIconButtonStyle
-import org.spotube.millennium.composables.MillenniumTextField
-import compose.icons.FeatherIcons
-import compose.icons.feathericons.Grid
-import compose.icons.feathericons.List
 import spotube.composeapp.generated.resources.*
 
 @Composable
@@ -139,15 +151,62 @@ fun LibraryScreen(libraryState: LibraryState = koinInject()) {
 
 @Composable
 private fun LibraryTabs(state: LibraryToolbarUiState, onTabSelected: (LibraryTab) -> Unit) {
+    val activeAccentColor = Color(0xFF38BDF8)
+    val glassSurface = MillenniumTheme.colors.surface.copy(alpha = 0.65f)
+    val inactiveBorder = Brush.verticalGradient(
+        colors = listOf(
+            Color.White.copy(alpha = 0.22f),
+            Color.White.copy(alpha = 0.06f)
+        )
+    )
+
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(LibraryTab.entries) { tab ->
-            MillenniumButton(
-                onClick = { onTabSelected(tab) },
-                style = if (state.currentTab == tab) MillenniumButtonStyle.Primary else MillenniumButtonStyle.Secondary
-            ) { Text(stringResource(tab.titleResource)) }
+            val isSelected = state.currentTab == tab
+            val pillBackground by animateColorAsState(
+                targetValue = if (isSelected) activeAccentColor.copy(alpha = 0.24f) else glassSurface,
+                animationSpec = tween(durationMillis = 220)
+            )
+            val textColor by animateColorAsState(
+                targetValue = if (isSelected) activeAccentColor else Color.White.copy(alpha = 0.80f),
+                animationSpec = tween(durationMillis = 220)
+            )
+
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(pillBackground)
+                    .then(
+                        if (isSelected) {
+                            Modifier.border(
+                                width = 1.dp,
+                                color = activeAccentColor.copy(alpha = 0.55f),
+                                shape = CircleShape
+                            )
+                        } else {
+                            Modifier.border(
+                                width = 1.dp,
+                                brush = inactiveBorder,
+                                shape = CircleShape
+                            )
+                        }
+                    )
+                    .clickable { onTabSelected(tab) }
+                    .padding(horizontal = 18.dp, vertical = 9.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(tab.titleResource),
+                    color = textColor,
+                    fontSize = 13.sp,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
